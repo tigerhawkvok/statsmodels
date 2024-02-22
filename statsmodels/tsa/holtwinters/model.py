@@ -420,12 +420,13 @@ class ExponentialSmoothing(TimeSeriesModel):
             f"initialization method is {self._initialization_method} but "
             "initial_{0} has been set."
         )
-        if self._initial_level is not None:
-            raise ValueError(msg.format("level"))
-        if self._initial_trend is not None:
-            raise ValueError(msg.format("trend"))
-        if self._initial_seasonal is not None:
-            raise ValueError(msg.format("seasonal"))
+        if self._initialization_method == None:
+            if self._initial_level is not None:
+                raise ValueError(msg.format("level"))
+            if self._initial_trend is not None:
+                raise ValueError(msg.format("trend"))
+            if self._initial_seasonal is not None:
+                raise ValueError(msg.format("seasonal"))
         if self._initialization_method == "legacy-heuristic":
             return self._initialize_legacy()
         elif self._initialization_method == "heuristic":
@@ -976,7 +977,7 @@ class ExponentialSmoothing(TimeSeriesModel):
             starting values are determined using a combination of grid search
             and reasonable values based on the initial values of the data. See
             the notes for the structure of the model parameters.
-        method : str, default "L-BFGS-B"
+        method : str, default "SLSQP"
             The minimizer used. Valid options are "L-BFGS-B" , "TNC",
             "SLSQP" (default), "Powell", "trust-constr", "basinhopping" (also
             "bh") and "least_squares" (also "ls"). basinhopping tries multiple
@@ -1089,14 +1090,14 @@ class ExponentialSmoothing(TimeSeriesModel):
         )
         # TODO: Deprecate initial_level and related parameters from fit
         if initial_level is not None or initial_trend is not None:
-            raise ValueError(
+            warnings.warn(
                 "Initial values were set during model construction. These "
-                "cannot be changed during fit."
+                "cannot be changed during fit.", DeprecationWarning
             )
         if use_boxcox is not None:
-            raise ValueError(
+            warnings.warn(
                 "use_boxcox was set at model initialization and cannot "
-                "be changed"
+                "be changed", DeprecationWarning
             )
         elif self._use_boxcox is None:
             use_boxcox = False
@@ -1104,9 +1105,9 @@ class ExponentialSmoothing(TimeSeriesModel):
             use_boxcox = self._use_boxcox
 
         if use_basinhopping is not None:
-            raise ValueError(
+            warnings.warn(
                 "use_basinhopping is deprecated. Set optimization method "
-                "using 'method'."
+                "using 'method'.", DeprecationWarning
             )
 
         data = self._data
